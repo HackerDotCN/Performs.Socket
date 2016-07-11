@@ -1,38 +1,47 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-	<meta charset="UTF-8">
-    <title>Web sockets test</title>
-    <script type="text/javascript">
-        var ws;
-        function ToggleConnectionClicked() {          
-                try {
-                    ws = new WebSocket("ws://192.168.1.66:16000");//连接服务器		
-					ws.onopen = function(event){alert("已经与服务器建立了连接\r\n当前连接状态："+this.readyState);};
-					ws.onmessage = function(event){alert("接收到服务器发送的数据：\r\n"+event.data);};
-					ws.onclose = function(event){alert("已经与服务器断开连接\r\n当前连接状态："+this.readyState);};
-					ws.onerror = function(event){alert("WebSocket异常！");};
-                } catch (ex) {
-                    alert(ex.message);      
-				}
+    <meta charset="UTF-8">
+    <title>socket-test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <style>
+        #message-box {
+            max-height: 300px;
+            overflow: auto;
+        }
+    </style>
+    <script>
+        var addMessage = function (message) {
+            $("#message-box .content").append(message + "<br>")
         };
 
-        function SendData() {
-			try{
-				ws.send("beston");
-			}catch(ex){
-				alert(ex.message);
-			}
+        var ws = new WebSocket("ws://192.168.1.66:16000");
+        ws.onopen = function () {
+            addMessage("连接服务器成功!")
         };
-
-		function seestate(){
-			alert(ws.readyState);
-		}
-       
+        ws.onclose = function () {
+            addMessage("与服务器断开连接")
+        };
+        ws.onerror = function(evt) {
+            addMessage("出错:");
+            addMessage(JSON.stringify(evt));
+        };
+        ws.onmessage = function(message){
+            console.log(message);
+            $("#response-box .content").append(message.data + "<br>")
+        }
     </script>
 </head>
+
 <body>
-   <button id='ToggleConnection' type="button" onclick='ToggleConnectionClicked();'>连接服务器</button><br /><br />
-    <button id='ToggleConnection' type="button" onclick='SendData();'>发送我的名字：beston</button><br /><br />
-    <button id='ToggleConnection' type="button" onclick='seestate();'>查看状态</button><br /><br />
+<input type="text" id="send-text">
+<button id="commit" onclick="ws.send($('#send-text').val());$('#send-text').val('')">提交</button>
+<div id="message-box">
+    <div class="content"></div>
+</div>
+<div id="response-box">
+    <div class="content"></div>
+</div>
 </body>
 </html>
